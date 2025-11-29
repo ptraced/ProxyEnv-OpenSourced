@@ -1,0 +1,104 @@
+﻿@using System.Web
+@model X.PagedList.IPagedList<Proxy.Models.ProxyModel>
+@using IdentityManagerUI.Models
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using X.Web.PagedList
+@inject ApplicationDbContext _context;
+@{
+    ViewData["Title"] = "Home Page";
+    ViewBag.Context = _context;
+}
+<div class="d-flex ms-lg-3 float-start">
+    <button type="button" class="btn btn-outline-primary btn-sm m-2" onclick="api.ExportProxies();">
+        @Html.ActionLink("EXPORT FILTERED PROXIES", "Index", new { page = (Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber), sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter, exportCurrent = "true" })
+    </button>
+    <button type="button" class="btn btn-outline-primary btn-sm m-2" onclick="api.ExportProxies();">
+        @Html.ActionLink("EXPORT ALL PROXIES", "Index", new { exportCurrent = "all" })
+    </button>
+</div>
+<br /><br />
+
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>
+            Last Scan
+        </th>
+        <th>
+            Address
+        </th>
+        <th>
+            Port
+        </th>
+        <th>
+            @Html.ActionLink("Speed", "Index", new { page = (Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber), sortOrder = ViewBag.SpeedSortParam, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            @Html.ActionLink("ISP", "Index", new { page = (Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber), sortOrder = ViewBag.NameSortParam, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            @Html.ActionLink("Country", "Index", new { page = (Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber), sortOrder = ViewBag.CountrySortParam, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            @Html.ActionLink("Blacklisted", "Index", new { page = (Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber), sortOrder = ViewBag.BlackListedSortParam, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            @Html.ActionLink("Fraud Score", "Index", new { page = (Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber), sortOrder = ViewBag.FraudScoreSortParam, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            @Html.ActionLink("Residential", "Index", new { page = (Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber), sortOrder = ViewBag.ResidentialSortParam, currentFilter = ViewBag.CurrentFilter })
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td data-last-scan="@item.LastScan.ToUniversalTime().ToString("o")" class="time-ago">
+                ???
+            </td>
+            <td>
+                <a href="https://ip-api.com/#@Html.Raw(HttpUtility.UrlEncode(item.address))" target="_blank">@item.address</a>
+            </td>
+            <td>
+                @item.port
+            </td>
+            <td>
+                @(item.ping)ms
+            </td>
+            <td>
+                @item.isp
+            </td>
+            <td>
+                @item.country
+            </td>
+            <td>
+                @item.isBlacklisted
+            </td>
+            <td>
+                @item.FraudScore
+            </td>
+            <td>
+                @item.isResidential
+            </td>
+        </tr>
+    }
+    @using (Html.BeginForm())
+    {
+        <div class="d-flex clearfix ms-lg-3 float-end">
+            <div class="input-group-text">
+                <input type="text" id="SearchString" name="SearchString" class="form-control"/>
+                <input type="submit" class="btn btn-outline-primary btn-sm m-2" value="Search"/>
+            </div>
+        </div>
+    }
+    <br />
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+    @Html.PagedListPager(Model, page => Url.Action("Index",new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions {
+        LiElementClasses = new string[] { "page-item" },
+        PageClasses = new string[] { "page-link" }})
+            
+    </tbody>
+</table>
+<br />
